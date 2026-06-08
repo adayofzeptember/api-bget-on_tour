@@ -370,8 +370,7 @@ regis_router.get('/regis-info', verifyToken, (req, res) => {
         }
 
         const studentData = results[0];
-        console.log(studentData.birthday);
-        console.log(typeof studentData.birthday);
+  
         // ถ้า school_id ไม่ match กับ BS_schools
         if (!studentData.school_name) {
             return res.status(200).json({
