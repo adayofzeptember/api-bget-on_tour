@@ -41,7 +41,9 @@ regis_router.get('/schools', async (req, res) => {
 
             try {
                 timeline = JSON.parse(item.timeline_json);
-            } catch (_) { }
+            } catch (_) {
+
+            }
 
             return {
                 id: item.id,
@@ -336,7 +338,8 @@ regis_router.get('/regis-info', verifyToken, (req, res) => {
             mc.id_card,
             mc.user_email,
             mc.telephone,
-            mc.birthday
+            DATE_FORMAT(mc.birthday, '%Y-%m-%d') AS birthday
+
 
         FROM BS_students s
 
@@ -350,6 +353,7 @@ regis_router.get('/regis-info', verifyToken, (req, res) => {
     `;
 
     db.query(get_profile_query, [userIdToken], (err, results) => {
+
 
         if (err) {
             console.error('Database error:', err);
@@ -366,7 +370,8 @@ regis_router.get('/regis-info', verifyToken, (req, res) => {
         }
 
         const studentData = results[0];
-
+        console.log(studentData.birthday);
+        console.log(typeof studentData.birthday);
         // ถ้า school_id ไม่ match กับ BS_schools
         if (!studentData.school_name) {
             return res.status(200).json({
@@ -398,8 +403,7 @@ regis_router.get('/regis-info', verifyToken, (req, res) => {
             timeline = studentData.timeline_json;
         }
         birthday: studentData.birthday
-            ? studentData.birthday.toISOString().split('T')[0]
-            : null
+ 
         return res.status(200).json({
             success: true,
             data: {
@@ -414,8 +418,6 @@ regis_router.get('/regis-info', verifyToken, (req, res) => {
                     user_email: studentData.user_email,
                     telephone: studentData.telephone,
                     birthday: studentData.birthday
-                        ? studentData.birthday.toISOString().split('T')[0]
-                        : null
                 },
 
                 school: {

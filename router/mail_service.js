@@ -414,6 +414,4 @@ async function sendMailRegister(email, link, idcustomer, mailVerify, check) {
   }
 }
 
-
-
 module.exports = { sendMailRegister };
