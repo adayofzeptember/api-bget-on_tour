@@ -672,10 +672,7 @@ regis_router.get('/exam-result', verifyToken, (req, res) => {
             s.cefr_level,
             s.result_status,
 
-            sch.name AS school_name,
-            sch.province,
-            sch.exam_datetime,
-            sch.timeline_json,
+            sch.*,
 
             mc.forename,
             mc.surename,
@@ -720,37 +717,58 @@ regis_router.get('/exam-result', verifyToken, (req, res) => {
             timeline_json = user.timeline_json || [];
         }
 
+        const {
+            grade_level,
+            exam_id,
+            city,
+
+            scholarship_tier_code,
+            total_score,
+            scholarship_type,
+            cefr_level,
+            result_status,
+
+            forename,
+            surename,
+            id_card,
+            user_email,
+            telephone,
+            birthday,
+
+            timeline_json: _timeline_json,
+
+            ...school
+        } = user;
+
         return res.status(200).json({
             success: true,
             data: {
                 exam_result: {
-                    total_score: user.total_score ?? '-',
-                    cefr_level: user.cefr_level ?? '-',
-                    scholarship_tier_code: user.scholarship_tier_code ?? '-',
-                    scholarship_type: user.scholarship_type ?? '-',
-                    result_status: user.result_status ?? '-'
+                    total_score: total_score ?? '-',
+                    cefr_level: cefr_level ?? '-',
+                    scholarship_tier_code: scholarship_tier_code ?? '-',
+                    scholarship_type: scholarship_type ?? '-',
+                    result_status: result_status ?? '-'
                 },
 
                 student: {
-                    forename: user.forename ?? '-',
-                    surename: user.surename ?? '-',
-                    id_card: user.id_card ?? '-',
-                    user_email: user.user_email ?? '-',
-                    telephone: user.telephone ?? '-',
-                    birthday: user.birthday ?? '-'
+                    forename: forename ?? '-',
+                    surename: surename ?? '-',
+                    id_card: id_card ?? '-',
+                    user_email: user_email ?? '-',
+                    telephone: telephone ?? '-',
+                    birthday: birthday ?? '-'
                 },
 
                 school: {
-                    school_name: user.school_name ?? '-',
-                    province: user.province ?? '-',
-                    exam_datetime: user.exam_datetime ?? '-',
+                    ...school,
                     timeline_json
                 },
 
                 registration: {
-                    grade_level: user.grade_level ?? '-',
-                    exam_id: user.exam_id ?? '-',
-                    city: user.city ?? '-'
+                    grade_level: grade_level ?? '-',
+                    exam_id: exam_id ?? '-',
+                    city: city ?? '-'
                 }
             }
         });
