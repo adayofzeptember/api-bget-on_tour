@@ -775,4 +775,88 @@ regis_router.get('/exam-result', verifyToken, (req, res) => {
     });
 });
 
+regis_router.post('/orientation', verifyToken, (req, res) => {
+    const userIdToken = req.tokenData.userId;
+    const { orientation } = req.body;
+
+    let query;
+    let params;
+
+    if (orientation === 'declined') {
+        query = `
+            UPDATE BS_students
+            SET
+                orientation_status = ?,
+                scholarship_status = 'declined',
+                orientation_at = NOW()
+            WHERE customer_id = ?
+        `;
+        params = [orientation, userIdToken];
+    } else {
+        query = `
+            UPDATE BS_students
+            SET
+                orientation_status = ?,
+                orientation_at = NOW()
+            WHERE customer_id = ?
+        `;
+        params = [orientation, userIdToken];
+    }
+
+    db.query(query, params, (err, results) => {
+        if (err) {
+            console.error('Error updating orientation:', err);
+            return res.status(500).json({
+                message: 'เกิดข้อผิดพลาด'
+            });
+        }
+
+        if (results.affectedRows === 0) {
+            return res.status(404).json({
+                message: 'ไม่พบข้อมูลผู้ใช้'
+            });
+        }
+
+        const message =
+            orientation === 'accepted'
+                ? 'ยืนยันเข้าร่วมปฐมนิเทศแล้ว'
+                : 'สละสิทธิ์ปฐมนิเทศและทุนแล้ว';
+
+        return res.status(200).json({ message });
+    });
+});
+
+regis_router.post('/orientation-doc', verifyToken, (req, res) => {
+    const userIdToken = req.tokenData.userId;
+
+    const query = `
+        UPDATE BS_students
+        SET orientation_doc_requested_at = NOW()
+        WHERE customer_id = ?
+    `;
+
+    db.query(query, [userIdToken], (err, results) => {
+        if (err) {
+            console.error('Error updating orientation_doc_requested_at:', err);
+
+            return res.status(500).json({
+                success: false,
+                message: 'เกิดข้อผิดพลาด'
+            });
+        }
+
+        if (results.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'ไม่พบข้อมูลผู้ใช้'
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'บันทึกเวลาสำเร็จ'
+        });
+    });
+});
+
 module.exports = regis_router;
