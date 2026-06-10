@@ -370,7 +370,7 @@ regis_router.get('/regis-info', verifyToken, (req, res) => {
         }
 
         const studentData = results[0];
-  
+
         // ถ้า school_id ไม่ match กับ BS_schools
         if (!studentData.school_name) {
             return res.status(200).json({
@@ -402,7 +402,7 @@ regis_router.get('/regis-info', verifyToken, (req, res) => {
             timeline = studentData.timeline_json;
         }
         birthday: studentData.birthday
- 
+
         return res.status(200).json({
             success: true,
             data: {
@@ -518,6 +518,243 @@ regis_router.post('/gate', async (req, res) => {
             message: 'เกิดข้อผิดพลาดภายในระบบ'
         });
     }
+});
+
+
+regis_router.get('/exam-result2', verifyToken, (req, res) => {
+    const userIdToken = req.tokenData.userId;
+
+    const get_profile_query = `
+        SELECT 
+   scholarship_tier_code, total_score, scholarship_type,cefr_level,result_status
+        FROM BS_students
+        WHERE customer_id = ?
+    `;
+
+    db.query(get_profile_query, [userIdToken], (err, results) => {
+        if (err) {
+            console.error('Database error:', err);
+
+            return res.status(500).json({
+                message: 'เกิดข้อผิดพลาดในการเชื่อมต่อ'
+            });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({
+                message: 'ไม่พบข้อมูล'
+            });
+        }
+
+        const user = results[0];
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                score: user.total_score || '-',
+                level: user.cefr_level || '-',
+                scholarship_code: user.scholarship_tier_code || '-',
+                scholarship_type: user.scholarship_type || '-',
+                result: user.result_status || '-'
+            }
+        });
+    });
+});
+
+
+regis_router.patch('/orientation', verifyToken, (req, res) => {
+    const userIdToken = req.tokenData.userId;
+    const { orientation } = req.body;
+
+    let query;
+    let params;
+
+    if (orientation === 'declined') {
+        query = `
+            UPDATE BS_students
+            SET
+                orientation_status = ?,
+                scholarship_status = 'declined',
+                orientation_at = NOW()
+            WHERE customer_id = ?
+        `;
+        params = [orientation, userIdToken];
+    } else {
+        query = `
+            UPDATE BS_students
+            SET
+                orientation_status = ?,
+                orientation_at = NOW()
+            WHERE customer_id = ?
+        `;
+        params = [orientation, userIdToken];
+    }
+
+    db.query(query, params, (err, results) => {
+        if (err) {
+            console.error('Error updating orientation:', err);
+            return res.status(500).json({
+                message: 'เกิดข้อผิดพลาด'
+            });
+        }
+
+        if (results.affectedRows === 0) {
+            return res.status(404).json({
+                message: 'ไม่พบข้อมูลผู้ใช้'
+            });
+        }
+
+        const message =
+            orientation === 'accepted'
+                ? 'ยืนยันเข้าร่วมปฐมนิเทศแล้ว'
+                : 'สละสิทธิ์ปฐมนิเทศและทุนแล้ว';
+
+        return res.status(200).json({ message });
+    });
+});
+
+regis_router.patch('/fund', verifyToken, (req, res) => {
+    const userIdToken = req.tokenData.userId;
+    const { text_confirm } = req.body;
+
+    if (!text_confirm) {
+        return res.status(400).json({
+            message: 'กรุณาระบุสถานะการยืนยันสิทธิ์'
+        });
+    }
+
+    const query = `
+        UPDATE BS_students
+        SET scholarship_status = ?, scholarship_at = NOW()
+        WHERE customer_id = ?
+    `;
+
+    db.query(query, [text_confirm, userIdToken], (err, results) => {
+        if (err) {
+            console.error('Error updating confirm_fund:', err);
+            return res.status(500).json({
+                message: 'เกิดข้อผิดพลาด'
+            });
+        }
+
+        if (results.affectedRows === 0) {
+            return res.status(404).json({
+                message: 'ไม่พบข้อมูลผู้ใช้'
+            });
+        }
+
+        let message = '';
+
+        if (text_confirm === 'accepted') {
+            message = 'ยืนยันรับทุนสำเร็จ';
+        } else if (text_confirm === 'declined') {
+            message = 'สละสิทธิ์รับทุนแล้ว';
+        }
+
+        return res.status(200).json({
+            message
+        });
+    });
+});
+
+regis_router.get('/exam-result', verifyToken, (req, res) => {
+    const userIdToken = req.tokenData.userId;
+
+    const query = `
+        SELECT
+            s.grade_level,
+            s.exam_id,
+            s.city,
+
+            s.scholarship_tier_code,
+            s.total_score,
+            s.scholarship_type,
+            s.cefr_level,
+            s.result_status,
+
+            sch.name AS school_name,
+            sch.province,
+            sch.exam_datetime,
+            sch.timeline_json,
+
+            mc.forename,
+            mc.surename,
+            mc.id_card,
+            mc.user_email,
+            mc.telephone,
+            DATE_FORMAT(mc.birthday, '%Y-%m-%d') AS birthday
+
+        FROM BS_students s
+
+        LEFT JOIN BS_schools sch
+            ON s.school_id = sch.id
+
+        LEFT JOIN mod_customer mc
+            ON s.customer_id = mc.id_customer
+
+        WHERE s.customer_id = ?
+    `;
+
+    db.query(query, [userIdToken], (err, results) => {
+        if (err) {
+            console.error('Database error:', err);
+
+            return res.status(500).json({
+                message: 'เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล'
+            });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({
+                message: 'ไม่พบข้อมูล'
+            });
+        }
+
+        const user = results[0];
+
+        let timeline_json = [];
+
+        try {
+            timeline_json = JSON.parse(user.timeline_json);
+        } catch (_) {
+            timeline_json = user.timeline_json || [];
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                exam_result: {
+                    total_score: user.total_score ?? '-',
+                    cefr_level: user.cefr_level ?? '-',
+                    scholarship_tier_code: user.scholarship_tier_code ?? '-',
+                    scholarship_type: user.scholarship_type ?? '-',
+                    result_status: user.result_status ?? '-'
+                },
+
+                student: {
+                    forename: user.forename ?? '-',
+                    surename: user.surename ?? '-',
+                    id_card: user.id_card ?? '-',
+                    user_email: user.user_email ?? '-',
+                    telephone: user.telephone ?? '-',
+                    birthday: user.birthday ?? '-'
+                },
+
+                school: {
+                    school_name: user.school_name ?? '-',
+                    province: user.province ?? '-',
+                    exam_datetime: user.exam_datetime ?? '-',
+                    timeline_json
+                },
+
+                registration: {
+                    grade_level: user.grade_level ?? '-',
+                    exam_id: user.exam_id ?? '-',
+                    city: user.city ?? '-'
+                }
+            }
+        });
+    });
 });
 
 module.exports = regis_router;
