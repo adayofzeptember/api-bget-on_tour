@@ -662,16 +662,7 @@ regis_router.get('/exam-result', verifyToken, (req, res) => {
 
     const query = `
         SELECT
-            s.grade_level,
-            s.exam_id,
-            s.city,
-
-            s.scholarship_tier_code,
-            s.total_score,
-            s.scholarship_type,
-            s.cefr_level,
-            s.result_status,
-
+            s.*,
             sch.*,
 
             mc.forename,
@@ -718,16 +709,7 @@ regis_router.get('/exam-result', verifyToken, (req, res) => {
         }
 
         const {
-            grade_level,
-            exam_id,
-            city,
-
-            scholarship_tier_code,
-            total_score,
-            scholarship_type,
-            cefr_level,
-            result_status,
-
+            // mod_customer
             forename,
             surename,
             id_card,
@@ -735,9 +717,21 @@ regis_router.get('/exam-result', verifyToken, (req, res) => {
             telephone,
             birthday,
 
-            timeline_json: _timeline_json,
+            // BS_students fields ที่ใช้แยกไป exam_result
+            total_score,
+            cefr_level,
+            scholarship_tier_code,
+            scholarship_type,
+            result_status,
 
-            ...school
+            // BS_schools fields ที่อยากย้ายไป school
+            timeline_json: _timeline_json,
+            province,
+            exam_datetime,
+            name,
+
+            // เหลือทั้งหมดเป็น student
+            ...student
         } = user;
 
         return res.status(200).json({
@@ -752,6 +746,8 @@ regis_router.get('/exam-result', verifyToken, (req, res) => {
                 },
 
                 student: {
+                    ...student,
+
                     forename: forename ?? '-',
                     surename: surename ?? '-',
                     id_card: id_card ?? '-',
@@ -761,19 +757,137 @@ regis_router.get('/exam-result', verifyToken, (req, res) => {
                 },
 
                 school: {
-                    ...school,
+                    id: user.id ?? '-',
+                    name: name ?? '-',
+                    province: province ?? '-',
+                    exam_datetime: exam_datetime ?? '-',
                     timeline_json
-                },
-
-                registration: {
-                    grade_level: grade_level ?? '-',
-                    exam_id: exam_id ?? '-',
-                    city: city ?? '-'
                 }
             }
         });
     });
 });
+
+// regis_router.get('/exam-result', verifyToken, (req, res) => {
+//     const userIdToken = req.tokenData.userId;
+
+//     const query = `
+//         SELECT
+//             s.grade_level,
+//             s.exam_id,
+//             s.city,
+
+//             s.scholarship_tier_code,
+//             s.total_score,
+//             s.scholarship_type,
+//             s.cefr_level,
+//             s.result_status,
+
+
+//             s.*
+
+//             sch.*,
+
+//             mc.forename,
+//             mc.surename,
+//             mc.id_card,
+//             mc.user_email,
+//             mc.telephone,
+//             DATE_FORMAT(mc.birthday, '%Y-%m-%d') AS birthday
+
+//         FROM BS_students s
+
+//         LEFT JOIN BS_schools sch
+//             ON s.school_id = sch.id
+
+//         LEFT JOIN mod_customer mc
+//             ON s.customer_id = mc.id_customer
+
+//         WHERE s.customer_id = ?
+//     `;
+
+//     db.query(query, [userIdToken], (err, results) => {
+//         if (err) {
+//             console.error('Database error:', err);
+
+//             return res.status(500).json({
+//                 message: 'เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล'
+//             });
+//         }
+
+//         if (results.length === 0) {
+//             return res.status(404).json({
+//                 message: 'ไม่พบข้อมูล'
+//             });
+//         }
+
+//         const user = results[0];
+
+//         let timeline_json = [];
+
+//         try {
+//             timeline_json = JSON.parse(user.timeline_json);
+//         } catch (_) {
+//             timeline_json = user.timeline_json || [];
+//         }
+
+//         const {
+//             grade_level,
+//             exam_id,
+//             city,
+
+//             scholarship_tier_code,
+//             total_score,
+//             scholarship_type,
+//             cefr_level,
+//             result_status,
+
+//             forename,
+//             surename,
+//             id_card,
+//             user_email,
+//             telephone,
+//             birthday,
+
+//             timeline_json: _timeline_json,
+
+//             ...school
+//         } = user;
+
+//         return res.status(200).json({
+//             success: true,
+//             data: {
+//                 exam_result: {
+//                     total_score: total_score ?? '-',
+//                     cefr_level: cefr_level ?? '-',
+//                     scholarship_tier_code: scholarship_tier_code ?? '-',
+//                     scholarship_type: scholarship_type ?? '-',
+//                     result_status: result_status ?? '-'
+//                 },
+
+//                 student: {
+//                     forename: forename ?? '-',
+//                     surename: surename ?? '-',
+//                     id_card: id_card ?? '-',
+//                     user_email: user_email ?? '-',
+//                     telephone: telephone ?? '-',
+//                     birthday: birthday ?? '-'
+//                 },
+
+//                 school: {
+//                     ...school,
+//                     timeline_json
+//                 },
+
+//                 registration: {
+//                     grade_level: grade_level ?? '-',
+//                     exam_id: exam_id ?? '-',
+//                     city: city ?? '-'
+//                 }
+//             }
+//         });
+//     });
+// });
 
 regis_router.post('/orientation', verifyToken, (req, res) => {
     const userIdToken = req.tokenData.userId;
