@@ -520,7 +520,6 @@ regis_router.post('/gate', async (req, res) => {
     }
 });
 
-
 regis_router.get('/exam-result2', verifyToken, (req, res) => {
     const userIdToken = req.tokenData.userId;
 
@@ -560,7 +559,6 @@ regis_router.get('/exam-result2', verifyToken, (req, res) => {
         });
     });
 });
-
 
 regis_router.patch('/orientation', verifyToken, (req, res) => {
     const userIdToken = req.tokenData.userId;
@@ -616,7 +614,7 @@ regis_router.patch('/orientation', verifyToken, (req, res) => {
 regis_router.patch('/fund', verifyToken, (req, res) => {
     const userIdToken = req.tokenData.userId;
     const { text_confirm } = req.body;
-
+    
     if (!text_confirm) {
         return res.status(400).json({
             message: 'กรุณาระบุสถานะการยืนยันสิทธิ์'
@@ -646,9 +644,9 @@ regis_router.patch('/fund', verifyToken, (req, res) => {
         let message = '';
 
         if (text_confirm === 'accepted') {
-            message = 'ยืนยันรับทุนสำเร็จ';
+            message = 'accepted';
         } else if (text_confirm === 'declined') {
-            message = 'สละสิทธิ์รับทุนแล้ว';
+            message = 'declined';
         }
 
         return res.status(200).json({
@@ -768,26 +766,21 @@ regis_router.get('/exam-result', verifyToken, (req, res) => {
     });
 });
 
+
 // regis_router.get('/exam-result', verifyToken, (req, res) => {
 //     const userIdToken = req.tokenData.userId;
-
 //     const query = `
 //         SELECT
 //             s.grade_level,
 //             s.exam_id,
 //             s.city,
-
 //             s.scholarship_tier_code,
 //             s.total_score,
 //             s.scholarship_type,
 //             s.cefr_level,
 //             s.result_status,
-
-
 //             s.*
-
 //             sch.*,
-
 //             mc.forename,
 //             mc.surename,
 //             mc.id_card,
@@ -835,7 +828,6 @@ regis_router.get('/exam-result', verifyToken, (req, res) => {
 //             grade_level,
 //             exam_id,
 //             city,
-
 //             scholarship_tier_code,
 //             total_score,
 //             scholarship_type,
@@ -972,5 +964,7 @@ regis_router.post('/orientation-doc', verifyToken, (req, res) => {
         });
     });
 });
+
+
 
 module.exports = regis_router;
