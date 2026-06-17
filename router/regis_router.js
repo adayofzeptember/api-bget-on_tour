@@ -153,7 +153,8 @@ regis_router.post('/register-student', verifyToken, async (req, res) => {
         Melbourne: '05',
         Sydney: '06',
         Tokyo: '07',
-        Toronto: '08'
+        Toronto: '08',
+        Shanghai: '09'
     };
 
     const cityCode = cityCodeMap[city];
@@ -614,7 +615,7 @@ regis_router.patch('/orientation', verifyToken, (req, res) => {
 regis_router.patch('/fund', verifyToken, (req, res) => {
     const userIdToken = req.tokenData.userId;
     const { text_confirm } = req.body;
-    
+
     if (!text_confirm) {
         return res.status(400).json({
             message: 'กรุณาระบุสถานะการยืนยันสิทธิ์'
@@ -787,43 +788,32 @@ regis_router.get('/exam-result', verifyToken, (req, res) => {
 //             mc.user_email,
 //             mc.telephone,
 //             DATE_FORMAT(mc.birthday, '%Y-%m-%d') AS birthday
-
 //         FROM BS_students s
-
 //         LEFT JOIN BS_schools sch
-//             ON s.school_id = sch.id
-
+//            ON s.school_id = sch.id
 //         LEFT JOIN mod_customer mc
 //             ON s.customer_id = mc.id_customer
-
 //         WHERE s.customer_id = ?
 //     `;
-
 //     db.query(query, [userIdToken], (err, results) => {
 //         if (err) {
 //             console.error('Database error:', err);
-
 //             return res.status(500).json({
 //                 message: 'เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล'
 //             });
 //         }
-
 //         if (results.length === 0) {
 //             return res.status(404).json({
 //                 message: 'ไม่พบข้อมูล'
 //             });
 //         }
-
 //         const user = results[0];
-
 //         let timeline_json = [];
-
 //         try {
 //             timeline_json = JSON.parse(user.timeline_json);
 //         } catch (_) {
 //             timeline_json = user.timeline_json || [];
 //         }
-
 //         const {
 //             grade_level,
 //             exam_id,
@@ -833,19 +823,15 @@ regis_router.get('/exam-result', verifyToken, (req, res) => {
 //             scholarship_type,
 //             cefr_level,
 //             result_status,
-
 //             forename,
 //             surename,
 //             id_card,
 //             user_email,
 //             telephone,
 //             birthday,
-
 //             timeline_json: _timeline_json,
-
 //             ...school
 //         } = user;
-
 //         return res.status(200).json({
 //             success: true,
 //             data: {
