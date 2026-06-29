@@ -835,7 +835,7 @@ regis_router.get('/exam-result', verifyToken, (req, res) => {
 //         return res.status(200).json({
 //             success: true,
 //             data: {
-//                 exam_result: {
+//                 exam_result: {d
 //                     total_score: total_score ?? '-',
 //                     cefr_level: cefr_level ?? '-',
 //                     scholarship_tier_code: scholarship_tier_code ?? '-',
