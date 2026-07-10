@@ -131,7 +131,7 @@ auth_router.post('/register', async (req, res) => {
         if (resCheckDup.length > 0) {
             return res.status(409).json({ success: false, message: 'อีเมลนี้เคยลงทะเบียนไว้แล้ว' });
         }
-
+        
         //* insert users    
         const insert_user_query = `INSERT INTO users 
                     (id_user, id_data_role ,user_name, user_email, user_password, create_datetime) 
@@ -156,7 +156,6 @@ auth_router.post('/register', async (req, res) => {
                     // \ EGt */
                     const get_sendMail = `select id_customer, user_email_verify from mod_customer where user_email = ?`;
 
-
                     db.query(get_sendMail, [email], (err, results) => {
                         //*
                         if (err) {
@@ -167,6 +166,7 @@ auth_router.post('/register', async (req, res) => {
                             .then(mailResult => {
                                 if (!mailResult.success) console.error('ส่งเมลไม่สำเร็จ:', mailResult.error);
                             });
+
                         return res.status(201).json({
                             success: true,
                             message: 'สมัครสมาชิกเสร็จสิ้น',

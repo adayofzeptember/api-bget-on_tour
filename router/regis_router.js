@@ -767,7 +767,6 @@ regis_router.get('/exam-result', verifyToken, (req, res) => {
     });
 });
 
-
 // regis_router.get('/exam-result', verifyToken, (req, res) => {
 //     const userIdToken = req.tokenData.userId;
 //     const query = `
