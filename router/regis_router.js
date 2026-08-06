@@ -19,10 +19,7 @@ regis_router.get('/schools', async (req, res) => {
             name,
             province,
             exam_datetime,
-            video_url,
-            timeline_json,
-            payment_amount,
-            payment_due_at
+            timeline_json
         FROM BS_schools WHERE is_active = 1
         ORDER BY id ASC
     `;
@@ -51,10 +48,7 @@ regis_router.get('/schools', async (req, res) => {
                 school_name: item.name,
                 school_province: item.province,
                 exam_datetime: item.exam_datetime,
-                video_url: item.video_url,
                 timeline_json: timeline,
-                payment_amount: item.payment_amount,
-                payment_due_at: item.payment_due_at,
             };
         });
 
@@ -142,6 +136,7 @@ regis_router.post('/register-student', verifyToken, async (req, res) => {
         school_id,
         id_card,
         tel,
+        tel_parent,
         date
     } = req.body;
 
@@ -274,7 +269,9 @@ regis_router.post('/register-student', verifyToken, async (req, res) => {
                         SET
                             id_card = ?,
                             telephone = ?,
+                            tel_parent = ?,
                             birthday = ?
+
                         WHERE id_customer = ?
                     `;
 
@@ -283,6 +280,7 @@ regis_router.post('/register-student', verifyToken, async (req, res) => {
                         [
                             id_card,
                             tel,
+                            tel_parent,
                             date,
                             userIdToken
                         ],
@@ -339,6 +337,7 @@ regis_router.get('/regis-info', verifyToken, (req, res) => {
             mc.id_card,
             mc.user_email,
             mc.telephone,
+            mc.tel_parent,
             DATE_FORMAT(mc.birthday, '%Y-%m-%d') AS birthday
 
 
@@ -387,6 +386,7 @@ regis_router.get('/regis-info', verifyToken, (req, res) => {
                         id_card: studentData.id_card,
                         user_email: studentData.user_email,
                         telephone: studentData.telephone,
+                        tel_parent: studentData.tel_parent,
                         birthday: studentData.birthday
                     },
 
@@ -417,6 +417,7 @@ regis_router.get('/regis-info', verifyToken, (req, res) => {
                     id_card: studentData.id_card,
                     user_email: studentData.user_email,
                     telephone: studentData.telephone,
+                           tel_parent: studentData.tel_parent,
                     birthday: studentData.birthday
                 },
 
@@ -669,6 +670,7 @@ regis_router.get('/exam-result', verifyToken, (req, res) => {
             mc.id_card,
             mc.user_email,
             mc.telephone,
+            mc.tel_parent,
             DATE_FORMAT(mc.birthday, '%Y-%m-%d') AS birthday
 
         FROM BS_students s
@@ -714,6 +716,7 @@ regis_router.get('/exam-result', verifyToken, (req, res) => {
             id_card,
             user_email,
             telephone,
+            tel_parent,
             birthday,
 
             // BS_students fields ที่ใช้แยกไป exam_result
@@ -752,6 +755,7 @@ regis_router.get('/exam-result', verifyToken, (req, res) => {
                     id_card: id_card ?? '-',
                     user_email: user_email ?? '-',
                     telephone: telephone ?? '-',
+                    tel_parent: tel_parent ?? '-',
                     birthday: birthday ?? '-'
                 },
 
